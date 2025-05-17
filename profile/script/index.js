@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
+import { getFirestore, collection, getDocs ,updateDoc,doc } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -15,11 +15,21 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export async function getAllBooks() {
-  const usersCollection = collection(db, "books");
+export async function getAllUsers() {
+  const usersCollection = collection(db, "users");
   const snapshot = await getDocs(usersCollection);
-  const users = snapshot.docs.map(doc => ({ desc: doc.desc, ...doc.data() }));
+  const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   return users;
+}
+
+export async function updateUser(userId, updatedData) {
+  const userRef = doc(db, "users", userId);
+  try {
+    await updateDoc(userRef, updatedData);
+    console.log("User updated successfully");
+  } catch (error) {
+    console.error("Error updating user:", error);
+  }
 }
 
 

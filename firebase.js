@@ -46,10 +46,10 @@ export async function loginUser(email, password) {
 try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     alert(" User logged in:"+ userCredential.user.email);
-    if(userCredential.user.email=="rha772201@gmail.com"){
+    if(userCredential.user.email=="rha772207@gmail.com"){
       window.location.href = "./adminPanel/dashboard.html";   
     }
-    else window.location.href = `./Home/home.html?${userCredential.user.uid}`; 
+    else window.location.href = `./Home/home.html?id=${userCredential.user.uid}`; 
 } catch (error) {
     alert(" Login failed:"+ error.code+ error.message);
 }
@@ -81,7 +81,7 @@ export async function signInWithGoogle() {
       if(user.email=="rha772201@gmail.com"){
       window.location.href = "./adminPanel/dashboard.html";   
     }
-    else window.location.href = `./Home/home.html?${userCredential.user.uid}`; 
+    else window.location.href = `./Home/home.html?id=${userCredential.user.uid}`; 
     }
 
   } catch (error) {

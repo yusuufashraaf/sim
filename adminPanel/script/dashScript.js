@@ -263,7 +263,7 @@ document.getElementById("sign-out-btn").addEventListener("click", async (e) => {
     e.preventDefault();
     try {
     await signOutUser();
-    window.location.href = "index.html"; 
+    window.location.href = "../index.html"; 
     } catch (error) {
     alert("Error signing out: " + error.message, "danger", "books-table-alert");
     }

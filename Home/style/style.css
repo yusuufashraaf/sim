@@ -93,3 +93,7 @@ body {
 .navbar-search button:hover {
   background-color: #a2b9a7;
 }
+
+.nav-link{
+  cursor: pointer;
+}

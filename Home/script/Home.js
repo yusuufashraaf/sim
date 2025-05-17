@@ -1,12 +1,17 @@
-import { getAllUsers } from "./index.js";
+import { getAllBooks } from "./index.js";
+import { navBarButton } from "../../profile/script/profile.js";
+
 
 const productList = document.getElementById("productList");
 const filterSelect = document.getElementById("filterOption");
 const sortSelect = document.getElementById("sortOption");
 const searchInput = document.getElementById("searchInput");
 const searchButton = document.getElementById("searchForm");
+const profileHTML = document.getElementById("profileHTML");
 const loader = document.getElementById("loader");
 const paginationContainer = document.getElementById("pagination");
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
 
 const itemsPerPage = 12;
 let currentPage = 1;
@@ -15,11 +20,12 @@ let allProducts = [];
 // --- Fetch and initialize product data ---
 async function initializeProducts() {
   try {
-    allProducts = await getAllUsers();
+    allProducts = await getAllBooks();
   } catch (error) {
     console.error("Failed to fetch products:", error);
   }
 }
+
 
 // --- Render products based on filters, sorting, and pagination ---
 function renderProducts(products) {
@@ -39,15 +45,20 @@ function renderProducts(products) {
   paginatedItems.forEach((product) => {
     const productItem = document.createElement("div");
     productItem.classList.add("col");
-
     productItem.innerHTML = `
       <div class="card h-100">
-        <a class="productLink" href="product.html?id=${product.bookId}" target="_blank">
-          <img src="./imgs/Screenshot 2025-03-29 152147.png" class="card-img-top" alt="${escapeHTML(product.name)}" />
+        <a class="productLink" href="product.html?id=${
+          product.bookId
+        }" target="_blank">
+          <img src="./imgs/Screenshot 2025-03-29 152147.png" class="card-img-top" alt="${escapeHTML(
+            product.name
+          )}" />
         </a>
         <div class="card-body d-flex flex-column">
           <h5 class="card-title mb-1">${pascalCase(product.title)}</h5>
-          <p class="mb-2 ellipsis">${escapeHTML(pascalCase(product.description))}</p>
+          <p class="mb-2 ellipsis">${escapeHTML(
+            pascalCase(product.description)
+          )}</p>
           <span class="price mt-auto">EGP ${product.price}</span>
         </div>
       </div>
@@ -74,7 +85,9 @@ function renderPaginationControls(totalPages) {
   for (let i = 1; i <= totalPages; i++) {
     const btn = document.createElement("button");
     btn.textContent = i;
-    btn.className = `btn btn-sm mx-1 ${i === currentPage ? "btn-primary" : "btn-outline-primary"}`;
+    btn.className = `btn btn-sm mx-1 ${
+      i === currentPage ? "btn-primary" : "btn-outline-primary"
+    }`;
     btn.addEventListener("click", () => {
       currentPage = i;
       applyFiltersAndRender(); // Do not reset page on click
@@ -164,3 +177,4 @@ async function main() {
 }
 
 main();
+navBarButton()
