@@ -263,10 +263,12 @@ h4.section-title {
   color: var(--main-color);
   margin-bottom: 1rem;
 }
-.nav-link {
-  cursor: pointer;
-}
+
 .addtocart {
   background-color: var(--main-color) !important;
   border: 0 !important;
+}
+
+.nav-link{
+  cursor: pointer;
 }

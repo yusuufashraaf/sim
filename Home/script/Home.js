@@ -1,7 +1,6 @@
 import { getAllBooks } from "../../firebase.js";
 import { navBarButton } from "../../profile/script/profile.js";
 
-
 const productList = document.getElementById("productList");
 const filterSelect = document.getElementById("filterOption");
 const sortSelect = document.getElementById("sortOption");
@@ -14,7 +13,6 @@ const ids = params.get("id");
 const itemsPerPage = 12;
 let currentPage = 1;
 let allProducts = [];
-
 
 // --- Fetch and initialize product data ---
 async function initializeProducts() {
