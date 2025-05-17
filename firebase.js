@@ -1,3 +1,6 @@
+
+//start
+//==========================================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-analytics.js";
 import { getFirestore, collection, getDocs,addDoc ,setDoc, getDoc ,doc, deleteDoc, updateDoc  } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
@@ -21,6 +24,7 @@ const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
+export { db, auth, storage };
 
 
 // with email and password 
@@ -58,8 +62,8 @@ try {
 
 //with google 
 const provider = new GoogleAuthProvider();
-
-export async function signInWithGoogle() {
+//signup
+export async function signUpWithGoogle() {
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
@@ -77,8 +81,34 @@ export async function signInWithGoogle() {
       alert(`Welcome new user: ${user.displayName}`);
       window.location.href = "index.html"; 
     } else {
+      alert(`this email already exists}`);
+      window.location.href = "index.html"; 
+    }
+
+  } catch (error) {
+    alert("Google Sign-In error: " + error.message);
+  }
+}
+//signin
+export async function signInWithGoogle() {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      
+      alert("Please sign up before signing in with this email.");
+      
+    
+      await signOut(auth);
+      return;
+    } 
+    else {
       alert(`Welcome back: ${user.displayName}`);
-      if(user.email=="rha772201@gmail.com"){
+      if(user.email=="rha772207@gmail.com"){
       window.location.href = "./adminPanel/dashboard.html";   
     }
     else window.location.href = `./Home/home.html?id=${userCredential.user.uid}`; 
@@ -173,4 +203,29 @@ export async function signOutUser() {
     console.error("Sign-out error:", error);
     throw error; 
   }
+}
+
+//==========================================================================================
+//get book
+export async function getAllBooks() {
+  const usersCollection = collection(db, "books");
+  const snapshot = await getDocs(usersCollection);
+  const books = snapshot.docs.map((doc) => ({ desc: doc.desc, ...doc.data() }));
+  return books;
+}
+
+
+//==========================================================================================
+//find book
+export async function findBookByBookId(bookIdToFind) {
+  const booksCollection = collection(db, "books");
+  const snapshot = await getDocs(booksCollection);
+
+  for (const docSnap of snapshot.docs) {
+    const data = docSnap.data();
+    if (data.bookId === bookIdToFind) {
+      return { id: docSnap.id, ...data };
+    }
+  }
+  return null;
 }

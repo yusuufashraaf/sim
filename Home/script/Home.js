@@ -1,4 +1,4 @@
-import { getAllBooks } from "./index.js";
+import { getAllBooks } from "../../firebase.js";
 import { navBarButton } from "../../profile/script/profile.js";
 
 
@@ -7,15 +7,14 @@ const filterSelect = document.getElementById("filterOption");
 const sortSelect = document.getElementById("sortOption");
 const searchInput = document.getElementById("searchInput");
 const searchButton = document.getElementById("searchForm");
-const profileHTML = document.getElementById("profileHTML");
 const loader = document.getElementById("loader");
 const paginationContainer = document.getElementById("pagination");
 const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
-
+const ids = params.get("id");
 const itemsPerPage = 12;
 let currentPage = 1;
 let allProducts = [];
+
 
 // --- Fetch and initialize product data ---
 async function initializeProducts() {
@@ -25,7 +24,6 @@ async function initializeProducts() {
     console.error("Failed to fetch products:", error);
   }
 }
-
 
 // --- Render products based on filters, sorting, and pagination ---
 function renderProducts(products) {
@@ -47,9 +45,9 @@ function renderProducts(products) {
     productItem.classList.add("col");
     productItem.innerHTML = `
       <div class="card h-100">
-        <a class="productLink" href="product.html?id=${
+        <a class="productLink" href=".././productDetails/product.html?bookId=${
           product.bookId
-        }" target="_blank">
+        }&id=${ids}" target="_blank">
           <img src="./imgs/Screenshot 2025-03-29 152147.png" class="card-img-top" alt="${escapeHTML(
             product.name
           )}" />
@@ -177,4 +175,4 @@ async function main() {
 }
 
 main();
-navBarButton()
+navBarButton();
