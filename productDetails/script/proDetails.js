@@ -269,5 +269,5 @@ document.getElementById("continueShopping").addEventListener("click", () => {
 
 document.getElementById("goToCheckout").addEventListener("click", () => {
   console.log("clicked");
-  window.location.href = "payment.html";
+  window.location.href = "../payment/payment.html";
 });
