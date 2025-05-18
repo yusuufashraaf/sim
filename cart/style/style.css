@@ -117,11 +117,10 @@
 
     .quantity-input {
         width: 40px;
-    }
-
-    .quantity-btn {
-        width: 24px;
-        height: 24px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        
     }
 
     .summary-card {

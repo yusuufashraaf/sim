@@ -8,12 +8,16 @@ import {
   getDocs,
   addDoc,
   deleteDoc,
+  setDoc,
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
 import {
   getAuth,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
 import { navBarButton } from "../../profile/script/profile.js";
+
+
 document.addEventListener("DOMContentLoaded", () => {
   fetch("../navBar/navbar.html")
     .then((res) => {
@@ -75,40 +79,85 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUserId = user.uid;
     console.log("User ID:", currentUserId);
-
-    // Add to Cart
-    document.getElementById("addtocart").addEventListener("click", async () => {
-      if (!currentBook) return;
-
-      await addDoc(collection(db, "cart"), {
-        userId: currentUserId,
-        title: currentBook.title,
-        author: currentBook.author,
-        category: currentBook.category,
-        price: currentBook.price,
-        addedAt: new Date(),
-      });
-      // add cart to localstorage
-      let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-      const exists = cart.some(
-        (item) =>
-          item.title === currentBook.title && item.userId === currentUserId
-      );
-
-      if (!exists) {
-        cart.push({
-          ...currentBook,
-          userId: currentUserId,
-        });
-
-        localStorage.setItem("cart", JSON.stringify(cart));
-
-        alert("Added successfully");
-      } else {
-        alert("The book already exist");
+    
+    // Add to Cart function
+    async function addToCartInFirestore(item) {
+      if (!currentUserId || !item || !item.bookId) {
+        console.error("User ID or item details are missing.");
+        return;
       }
-      await showPopup(currentBook);
+
+      const cartDocId = `${currentUserId}_${item.bookId}`;
+      const cartDocRef = doc(db, "cart", cartDocId);
+      const cartDocSnap = await getDoc(cartDocRef);
+
+      if (cartDocSnap.exists()) {
+        // If item exists, increment quantity
+        const currentQty = cartDocSnap.data().quantity || 0;
+        await updateDoc(cartDocRef, {
+          quantity: currentQty + 1,
+          updatedAt: new Date(),
+        });
+        alert("Book quantity updated in cart!");
+      } else {
+        // If item doesn't exist, create with quantity 1
+        await setDoc(cartDocRef, {
+          userId: currentUserId,
+          bookId: item.bookId,
+          title: item.title,
+          description: item.description,
+          author: item.author,
+          category: item.category,
+          price: item.price,
+          imageUrl: item.imageUrl,
+          quantity: 1,
+          addedAt: new Date(),
+        });
+        alert("Book added to cart!");
+      }
+    }
+
+    // Add to Cart event listener
+    document.getElementById("addtocart").addEventListener("click", async () => {
+      if (!currentBook) {
+        alert("No book selected.");
+        return;
+      }
+
+      try {
+        // Update Firestore
+        await addToCartInFirestore(currentBook);
+
+        // Update localStorage
+        let localCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        const itemIndexInLocalCart = localCart.findIndex(
+          (cartItem) =>
+            cartItem.bookId === currentBook.bookId &&
+            cartItem.userId === currentUserId
+        );
+
+        if (itemIndexInLocalCart !== -1) {
+          // Item exists in local cart, increment quantity
+          localCart[itemIndexInLocalCart].quantity =
+            (localCart[itemIndexInLocalCart].quantity || 0) + 1;
+        } else {
+          localCart.push({
+            ...currentBook,
+            userId: currentUserId,
+            quantity: 1,
+            bookId: currentBook.bookId,
+          });
+        }
+
+        localStorage.setItem("cart", JSON.stringify(localCart));
+
+        // Show popup
+        await showPopup(currentBook);
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        alert("Failed to add book to cart. Please try again.");
+      }
     });
 
     // Add to Wishlist
