@@ -78,11 +78,11 @@ export function navBarButton() {
       const routes = {
         Home: "../Home/home.html",
         wishList: "../Wishlist/wishlist.html",
-        cart: "../Cart/cart.html",
+        cart: "../cart/cart.html",
         aboutUs: "../aboutUs/aboutUs.html",
         contactUs: "../contactUs/contactUs.html",
         signOut: "../index.html",
-        profileHTML: "../Profile/profile.html",
+        profileHTML: "../profile/profile.html",
       };
 
       const path = routes[page];
