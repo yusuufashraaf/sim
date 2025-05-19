@@ -34,36 +34,44 @@ function decreaseCount(id) {
 function increaseCount(id) {
   const cartRef = doc(db, "cart", id);
   
-  getDoc(cartRef)
-    .then((doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        const currentQuantity = data.quantity;
-        const bookId = data.bookId;
-        
-        const bookRef = doc(db, "books", bookId);
-        return getDoc(bookRef).then((bookDoc) => {
-          if (bookDoc.exists()) {
-            const bookData = bookDoc.data();
-            const availableStock = bookData.stock;
-            
-            
-            if (currentQuantity < availableStock) {
-              return updateDoc(cartRef, {
-                quantity: currentQuantity + 1
-              });
-            } else {
-              console.log("Cannot increase quantity: Maximum stock reached");
-            }
-          } else {
-            console.error("Book document not found");
+  return getDoc(cartRef).then((cartDoc) => {
+    if (cartDoc.exists()) {
+      const cartData = cartDoc.data();
+      const bookId = cartData.bookId;
+      
+      const bookRef = doc(db, "books", bookId);
+      return getDoc(bookRef).then((bookDoc) => {
+        if (bookDoc.exists()) {
+          const bookData = bookDoc.data();
+          const availableStock = bookData.stock || 0;
+          
+          if (cartData.quantity >= availableStock) {
+            console.log("Cannot increase quantity: Maximum stock reached");
+            return { success: false, message: "Maximum stock reached" };
           }
-        });
-      }
-    })
-    .catch((error) => {
-      console.error("Error increasing quantity:", error);
-    });
+          
+          return updateDoc(cartRef, {
+            quantity: cartData.quantity + 1,
+          }).then(() => {
+            return updateDoc(bookRef, {
+              stock: availableStock - 1
+            }).then(() => {
+              return { success: true, newQuantity: cartData.quantity + 1 };
+            });
+          });
+        } else {
+          console.error("Book not found");
+          return { success: false, message: "Book not found" };
+        }
+      });
+    } else {
+      console.error("Cart item not found");
+      return { success: false, message: "Cart item not found" };
+    }
+  }).catch((error) => {
+    console.error("Error updating quantity:", error);
+    return { success: false, message: error.message };
+  });
 }
  
 
