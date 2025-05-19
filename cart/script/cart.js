@@ -31,70 +31,37 @@ function decreaseCount(id) {
     })
 }
 
-function increaseCount(id) {
-  const cartRef = doc(db, "cart", id);
-  
-  return getDoc(cartRef).then((cartDoc) => {
+function increaseCount(cartId) {
+  const cartRef = doc(db, "cart", cartId);
+
+  getDoc(cartRef).then((cartDoc) => {
     if (cartDoc.exists()) {
       const cartData = cartDoc.data();
-      console.log("Cart data:", cartData);
-      
-      if (!cartData.bookId) {
-        console.error("Book ID not found in cart data");
-        const possibleBookIdFields = ["book_id", "bookID", "book"];
-        let bookId = null;
-        
-        for (const field of possibleBookIdFields) {
-          if (cartData[field]) {
-            bookId = cartData[field];
-            console.log(`Found book ID in field '${field}': ${bookId}`);
-            break;
-          }
-        }
-        
-        if (!bookId) {
-          console.error("Could not find book ID in cart data:", cartData);
-          return { success: false, message: "Book ID not found in cart data" };
-        }
-      }
-      
-      const bookId = cartData.bookId || cartData.book_id || cartData.bookID || cartData.book;
-      console.log("Using book ID:", bookId);
-      
-      const bookRef = doc(db, "books", bookId);
-      return getDoc(bookRef).then((bookDoc) => {
+      const bookRef = doc(db, "books", cartData.bookId);
+
+      getDoc(bookRef).then((bookDoc) => {
         if (bookDoc.exists()) {
           const bookData = bookDoc.data();
-          const availableStock = bookData.stock || 0;
-          
-          if (cartData.quantity >= availableStock) {
-            console.log("Cannot increase quantity: Maximum stock reached");
-            return { success: false, message: "Maximum stock reached" };
-          }
-          
-          return updateDoc(cartRef, {
-            quantity: cartData.quantity + 1,
-          }).then(() => {
-            return updateDoc(bookRef, {
-              stock: availableStock - 1
-            }).then(() => {
-              return { success: true, newQuantity: cartData.quantity + 1 };
+
+          if (cartData.quantity < bookData.stock) {
+            updateDoc(cartRef, {
+              quantity: cartData.quantity + 1,
             });
-          });
+          } else {
+            console.log("Cannot increase quantity beyond stock.");
+          }
         } else {
-          console.error("Book not found for ID:", bookId);
-          return { success: false, message: "Book not found" };
+          console.error("Book not found.");
         }
       });
     } else {
-      console.error("Cart item not found");
-      return { success: false, message: "Cart item not found" };
+      console.error("Cart item not found.");
     }
   }).catch((error) => {
-    console.error("Error updating quantity:", error);
-    return { success: false, message: error.message };
+    console.error("Error increasing quantity:", error);
   });
-} 
+}
+
 
 function removeItem(id) {
   const cartRef = doc(db, "cart", id);
