@@ -34,9 +34,9 @@ function decreaseCount(id) {
 function increaseCount(id) {
   const cartRef = doc(db, "cart", id);
   
-  return getDoc(cartRef).then((cartDoc) => {
-    if (cartDoc.exists()) {
-      const cartData = cartDoc.data();
+  return getDoc(cartRef).then((doc) => {
+    if (doc.exists()) {
+      const cartData = doc.data();
       const bookId = cartData.bookId;
       
       const bookRef = doc(db, "books", bookId);
