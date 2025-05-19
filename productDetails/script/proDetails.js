@@ -17,7 +17,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
 import { navBarButton } from "../../profile/script/profile.js";
 
-
 document.addEventListener("DOMContentLoaded", () => {
   fetch("../navBar/navbar.html")
     .then((res) => {
@@ -79,11 +78,30 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUserId = user.uid;
     console.log("User ID:", currentUserId);
-    
+
     // Add to Cart function
     async function addToCartInFirestore(item) {
       if (!currentUserId || !item || !item.bookId) {
         console.error("User ID or item details are missing.");
+        return;
+      }
+
+      // Get the current book stock
+      const booksRef = collection(db, "books");
+      const q = query(booksRef, where("bookId", "==", item.bookId));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("Book not found in database");
+        return;
+      }
+
+      const bookDoc = querySnapshot.docs[0];
+      const bookRef = bookDoc.ref;
+      const bookData = bookDoc.data();
+
+      if (bookData.stock <= 0) {
+        alert("Sorry, this book is out of stock!");
         return;
       }
 
@@ -98,6 +116,12 @@ onAuthStateChanged(auth, (user) => {
           quantity: currentQty + 1,
           updatedAt: new Date(),
         });
+
+        // Update book stock
+        await updateDoc(bookRef, {
+          stock: bookData.stock - 1,
+        });
+
         alert("Book quantity updated in cart!");
       } else {
         // If item doesn't exist, create with quantity 1
@@ -113,6 +137,12 @@ onAuthStateChanged(auth, (user) => {
           quantity: 1,
           addedAt: new Date(),
         });
+
+        // Update book stock
+        await updateDoc(bookRef, {
+          stock: bookData.stock - 1,
+        });
+
         alert("Book added to cart!");
       }
     }
