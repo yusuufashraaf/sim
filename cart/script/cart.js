@@ -185,7 +185,12 @@ document.addEventListener("DOMContentLoaded", () => {
   fetch("../navBar/navbar.html")
     .then((res) => res.text())
     .then((html) => {
-      document.getElementById("navbar-container").innerHTML = html;
+      const processedHtml = html.replace(
+        /href="([^"]*\/style\/navBar.css)"/,
+        'href="../navBar/style/navBar.css"'
+      );
+
+      document.getElementById("navbar-container").innerHTML = processedHtml;
       navBarButton();
     })
     .catch((err) => console.error("Navbar load error:", err));
