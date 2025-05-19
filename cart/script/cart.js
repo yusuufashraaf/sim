@@ -34,10 +34,32 @@ function decreaseCount(id) {
 function increaseCount(id) {
   const cartRef = doc(db, "cart", id);
   
-  return getDoc(cartRef).then((doc) => {
-    if (doc.exists()) {
-      const cartData = doc.data();
-      const bookId = cartData.bookId;
+  return getDoc(cartRef).then((cartDoc) => {
+    if (cartDoc.exists()) {
+      const cartData = cartDoc.data();
+      console.log("Cart data:", cartData);
+      
+      if (!cartData.bookId) {
+        console.error("Book ID not found in cart data");
+        const possibleBookIdFields = ["book_id", "bookID", "book"];
+        let bookId = null;
+        
+        for (const field of possibleBookIdFields) {
+          if (cartData[field]) {
+            bookId = cartData[field];
+            console.log(`Found book ID in field '${field}': ${bookId}`);
+            break;
+          }
+        }
+        
+        if (!bookId) {
+          console.error("Could not find book ID in cart data:", cartData);
+          return { success: false, message: "Book ID not found in cart data" };
+        }
+      }
+      
+      const bookId = cartData.bookId || cartData.book_id || cartData.bookID || cartData.book;
+      console.log("Using book ID:", bookId);
       
       const bookRef = doc(db, "books", bookId);
       return getDoc(bookRef).then((bookDoc) => {
@@ -60,7 +82,7 @@ function increaseCount(id) {
             });
           });
         } else {
-          console.error("Book not found");
+          console.error("Book not found for ID:", bookId);
           return { success: false, message: "Book not found" };
         }
       });
@@ -72,8 +94,7 @@ function increaseCount(id) {
     console.error("Error updating quantity:", error);
     return { success: false, message: error.message };
   });
-}
- 
+} 
 
 function removeItem(id) {
   const cartRef = doc(db, "cart", id);
