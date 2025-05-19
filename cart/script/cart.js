@@ -34,17 +34,38 @@ function decreaseCount(id) {
 function increaseCount(id) {
   const cartRef = doc(db, "cart", id);
   
-  getDoc(cartRef).then((doc) => {
-    if (doc.exists()) {
-      const data = doc.data();
-      updateDoc(cartRef, {
-        quantity: data.quantity + 1,
-      });
-    }
-  }).catch((error) => {
-    console.error("Error increasing quantity:", error);
-  })
+  getDoc(cartRef)
+    .then((cartDoc) => {
+      if (cartDoc.exists()) {
+        const cartData = cartDoc.data();
+        const currentQuantity = cartData.quantity;
+        const bookId = cartData.bookId;
+        
+        const bookRef = doc(db, "books", bookId);
+        return getDoc(bookRef).then((bookDoc) => {
+          if (bookDoc.exists()) {
+            const bookData = bookDoc.data();
+            const availableStock = bookData.stock;
+            
+            
+            if (currentQuantity < availableStock) {
+              return updateDoc(cartRef, {
+                quantity: currentQuantity + 1
+              });
+            } else {
+              console.log("Cannot increase quantity: Maximum stock reached");
+            }
+          } else {
+            console.error("Book document not found");
+          }
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error increasing quantity:", error);
+    });
 }
+ 
 
 function removeItem(id) {
   const cartRef = doc(db, "cart", id);
